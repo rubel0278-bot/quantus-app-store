@@ -1,0 +1,29 @@
+manifestVersion: 1
+id: quantus-node
+name: Quantus Node
+tagline: Quantus Network blockchain node with built-in solo mining.
+icon: https://raw.githubusercontent.com/rubel0278-bot/quantus-node-app/main/icon.png
+category: Mining Nodes
+version: "1.0.2"
+port: 9944
+description: |
+  Quantus Network blockchain node with built-in solo mining. This app runs the official Quantus Node v1.0.2-Qm binary and persists its chain data and configuration under /data.
+
+  It is intended for synchronization and validation on the Quantus Network. Solo mining uses the node's built-in miner; no separate quantus-miner service is installed.
+
+  If you find this app useful, please consider donating
+
+developer: Quantus Network
+website: https://quantus.network/
+submitter: Quantus Network
+submission: https://github.com/rubel0278-bot/quantus-node-app
+repo: https://github.com/Quantus-Network/chain
+support: https://github.com/Quantus-Network/chain/issues
+gallery:
+  - https://raw.githubusercontent.com/rubel0278-bot/quantus-node-app/main/icon.png
+releaseNotes: >-
+  Initial Quantus Node app package using official Quantus Node v1.0.2-Qm with built-in solo mining support.
+dependencies: []
+path: ""
+defaultUsername: ""
+defaultPassword: ""

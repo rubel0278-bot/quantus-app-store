@@ -1,0 +1,40 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: dashboard
+      APP_PORT: 8080
+
+  init_permissions:
+    image: ghcr.io/rubel0278-bot/quantus-node:v1.0.2-Qm@sha256:b4b12e37beb9754e773e9e93ec892eeb895029c97f81f8213f005a791c715dcf
+    restart: "no"
+    user: "0:0"
+    volumes:
+      - ${APP_DATA_DIR}/data:/data
+    entrypoint: ["/bin/sh", "-c", "set -eu; mkdir -p /data; chown 10001:10001 /data; chmod ug+rwx /data"]
+
+  node:
+    image: ghcr.io/rubel0278-bot/quantus-node:v1.0.2-Qm@sha256:b4b12e37beb9754e773e9e93ec892eeb895029c97f81f8213f005a791c715dcf
+    restart: unless-stopped
+    depends_on:
+      init_permissions:
+        condition: service_completed_successfully
+    user: "10001:10001"
+    volumes:
+      - ${APP_DATA_DIR}/data:/data
+    ports:
+      - "30333:30333"
+    security_opt:
+      - no-new-privileges:true
+
+  dashboard:
+    image: ghcr.io/rubel0278-bot/quantus-node-dashboard:v1.0.0@sha256:7d8a80fc4f3a1825dc739b7e3277db27dfa201f750b38cabb4fdfc6200efce6a
+    restart: unless-stopped
+    volumes:
+      - ${APP_DATA_DIR}/data:/data
+    environment:
+      NODE_RPC_URL: http://node:9944
+      DATA_DIR: /data
+    security_opt:
+      - no-new-privileges:true
