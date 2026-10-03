@@ -36,5 +36,7 @@ services:
     environment:
       NODE_RPC_URL: http://node:9944
       DATA_DIR: /data
+    ports:
+      - "8080:8080"
     security_opt:
       - no-new-privileges:true

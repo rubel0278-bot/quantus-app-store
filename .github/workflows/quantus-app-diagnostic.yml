@@ -1,0 +1,81 @@
+name: Quantus App Diagnostic
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Docker version
+        run: docker version
+
+      - name: Create app data directory
+        run: mkdir -p "${APP_DATA_DIR}/data"
+
+        env:
+          APP_DATA_DIR: /tmp/quantus-app-store
+
+      - name: Build and start app stack
+        env:
+          APP_DATA_DIR: /tmp/quantus-app-store
+        run: |
+          set -e
+          cd quantus-node
+          docker compose up -d --build
+
+      - name: Show containers
+        run: |
+          docker compose -f quantus-node/docker-compose.yml ps
+          docker ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+
+      - name: Wait for node logs
+        env:
+          APP_DATA_DIR: /tmp/quantus-app-store
+        run: |
+          set -e
+          timeout 120 bash -c 'while true; do docker compose -f quantus-node/docker-compose.yml logs node | tail -n 20; sleep 5; done' || true
+
+      - name: Check node RPC
+        run: |
+          set -e
+          docker exec $(docker ps --filter name=node --format '{{.ID}}' | head -n1) \
+            node --version || true
+          docker compose -f quantus-node/docker-compose.yml exec -T node \
+            quantus-node --version
+
+      - name: Check dashboard HTTP
+        run: |
+          set -e
+          timeout 60 bash -c 'for i in $(seq 1 60); do curl -fsS http://localhost:8080 && exit 0 || sleep 2; done; exit 1'
+
+      - name: Check dashboard API
+        run: |
+          set -e
+          curl -fsS http://localhost:8080/api/status
+          curl -fsS http://localhost:8080/api/settings
+
+      - name: Check /data access from dashboard
+        run: |
+          set -e
+          docker compose -f quantus-node/docker-compose.yml exec -T dashboard \
+            ls -la /data
+
+      - name: Check data directory permissions
+        run: |
+          ls -la "${APP_DATA_DIR}/data"
+
+        env:
+          APP_DATA_DIR: /tmp/quantus-app-store
+
+      - name: docker compose logs
+        run: |
+          docker compose -f quantus-node/docker-compose.yml logs --tail=200
+
+      - name: Stop stack
+        env:
+          APP_DATA_DIR: /tmp/quantus-app-store
+        run: |
+          docker compose -f quantus-node/docker-compose.yml down || true
