@@ -29,7 +29,7 @@ services:
       - no-new-privileges:true
 
   dashboard:
-    image: ghcr.io/rubel0278-bot/quantus-node-dashboard:v1.0.0@sha256:7122d0453e02134d92a02ed2e247822367981301e1cd88d960528af17589d692
+    image: ghcr.io/rubel0278-bot/quantus-node-dashboard:v1.0.0@sha256:3d22fe6a6f2c7c5b2eea7ac01aba9f61a85d392ecc51fc8599f5593c4e9fced9
     restart: unless-stopped
     volumes:
       - ${APP_DATA_DIR}/data:/data
