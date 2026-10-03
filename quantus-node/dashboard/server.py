@@ -100,9 +100,10 @@ def node_running_info():
             "disk": "-",
             "last_block": f"#{height}" if height > 0 else None,
             "last_block_age": "?",
-            "solo_port": "9333",
-            "solo_workers": "-",
-            "solo_hashrate": "-",
+            "solo_port": "9833/udp",
+            "solo_workers": "Not reported by current miner backend",
+            "solo_hashrate": "Not reported by current miner backend",
+            "mining_mode": "solo" if read_settings().get("solo_mining_enabled", True) else ("pool" if read_settings().get("pool_mining_enabled", False) else "off"),
             "readiness_pills": ["Node: " + ("Syncing" if is_syncing else "Synced"), "Pool: Standalone", "Stratum: Unknown"],
             "checklist": [
                 {"title": "Quantus node", "ready": True, "detail": "Node RPC is reachable."},
@@ -196,13 +197,13 @@ button.secondary{background:#222;color:#eee;border:1px solid #333}
       </div>
     </div>
 
-    <div class="card" style="border-color:#2e8f5b;background:linear-gradient(180deg,#111,#0d0d0d);border-radius:24px;padding:22px;margin-bottom:18px">
-      <h3>Solo Pool</h3>
-      <div class="small" style="color:#bbb;margin-bottom:12px">Stratum v1</div>
+    <div id="soloCard" class="card" style="border-color:#2e8f5b;background:linear-gradient(180deg,#111,#0d0d0d);border-radius:24px;padding:22px;margin-bottom:18px">
+      <h3 id="soloCardTitle">Solo Mining</h3>
+      <div class="small" style="color:#bbb;margin-bottom:12px">Built-in Quantus external-miner endpoint</div>
       <div class="row">
-        <div class="metric"><label>Port</label><div class="val" id="soloPort">9333</div></div>
-        <div class="metric"><label>Workers</label><div class="val" id="soloWorkers">-</div></div>
-        <div class="metric"><label>Hashrate</label><div class="val" id="soloHashrate">-</div></div>
+        <div class="metric"><label>Port</label><div class="val" id="soloPort">9833/udp</div></div>
+        <div class="metric"><label>Workers</label><div class="val" id="soloWorkers">Not reported</div></div>
+        <div class="metric"><label>Hashrate</label><div class="val" id="soloHashrate">Not reported</div></div>
       </div>
       <div style="height:12px"></div>
       <button onclick="showTab('pool')" class="secondary" style="border:1px solid #f9d268;background:#1b1b1b;color:#f9d268">Open Pool</button>
@@ -254,7 +255,7 @@ button.secondary{background:#222;color:#eee;border:1px solid #333}
 </div>
 <script>
 function showTab(id){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');event.currentTarget.classList.add('active')}
-async function loadStatus(){try{let r=await fetch('/api/status');let j=await r.json();document.getElementById('syncText').textContent=j.state;document.getElementById('syncCircle').textContent=j.sync_percentage===null?'-':(j.sync_percentage+'%');document.getElementById('syncBadge').textContent=j.badge;document.getElementById('blocks').textContent=j.block_height??'-';document.getElementById('headers').textContent=j.headers??'-';document.getElementById('peers').textContent=j.peers??'-';document.getElementById('chainLag').textContent=j.chain_lag??'-';document.getElementById('mempool').textContent=j.mempool??'-';document.getElementById('disk').textContent=j.disk??'-';document.getElementById('chainMeta').textContent=(j.chain||'main')+' | peers '+j.peers+' | finalized #'+(j.finalized_block??'-');document.getElementById('lastBlockLine').textContent=j.last_block?('Best '+j.last_block+' | Finalized #'+(j.finalized_block??'-')+' | Peers '+j.peers):'';document.getElementById('soloPort').textContent=j.solo_port??'9333';document.getElementById('soloWorkers').textContent=j.solo_workers??'-';document.getElementById('soloHashrate').textContent=j.solo_hashrate??'-';document.getElementById('readinessPills').innerHTML=(j.readiness_pills||[]).map(p=>'<span class="pill">'+p+'</span>').join('');document.getElementById('checklist').innerHTML=(j.checklist||[]).map(c=>'<div class="metric"><label>'+c.title+'</label><div class="val" style="color:'+(c.ready?'#00ff88':'#ffaa00')+'">'+(c.ready?'Ready':'Needs attention')+'</div><div class="small">'+c.detail+'</div></div>').join('');document.getElementById('miningMode').textContent=j.solo_mining?'Solo':'Off';document.getElementById('soloState').textContent=j.solo_mining?'Active':'Inactive';document.getElementById('poolState').textContent=j.pool_mining?'Active':'Inactive';document.getElementById('soloToggle').checked=j.solo_mining;document.getElementById('poolToggle').checked=j.pool_mining;document.getElementById('settingsSolo').checked=j.solo_mining;document.getElementById('settingsPool').checked=j.pool_mining}catch(e){}}
+async function loadStatus(){try{let r=await fetch('/api/status');let j=await r.json();document.getElementById('syncText').textContent=j.state;document.getElementById('syncCircle').textContent=j.sync_percentage===null?'-':(j.sync_percentage+'%');document.getElementById('syncBadge').textContent=j.badge;document.getElementById('blocks').textContent=j.block_height??'-';document.getElementById('headers').textContent=j.headers??'-';document.getElementById('peers').textContent=j.peers??'-';document.getElementById('chainLag').textContent=j.chain_lag??'-';document.getElementById('mempool').textContent=j.mempool??'-';document.getElementById('disk').textContent=j.disk??'-';document.getElementById('chainMeta').textContent=(j.chain||'main')+' | peers '+j.peers+' | finalized #'+(j.finalized_block??'-');document.getElementById('lastBlockLine').textContent=j.last_block?('Best '+j.last_block+' | Finalized #'+(j.finalized_block??'-')+' | Peers '+j.peers):'';document.getElementById('soloPort').textContent=j.solo_port??'9333';document.getElementById('soloWorkers').textContent=j.solo_workers??'-';document.getElementById('soloHashrate').textContent=j.solo_hashrate??'-';document.getElementById('readinessPills').innerHTML=(j.readiness_pills||[]).map(p=>'<span class="pill">'+p+'</span>').join('');document.getElementById('checklist').innerHTML=(j.checklist||[]).map(c=>'<div class="metric"><label>'+c.title+'</label><div class="val" style="color:'+(c.ready?'#00ff88':'#ffaa00')+'">'+(c.ready?'Ready':'Needs attention')+'</div><div class="small">'+c.detail+'</div></div>').join('');document.getElementById('miningMode').textContent=j.solo_mining?'Solo':(j.pool_mining?'Pool':'Off');document.getElementById('soloState').textContent=j.solo_mining?'Active':'Inactive';document.getElementById('poolState').textContent=j.pool_mining?'Active':'Inactive';document.getElementById('soloCard').style.display=j.solo_mining?'block':'none';document.getElementById('soloToggle').checked=j.solo_mining;document.getElementById('poolToggle').checked=j.pool_mining;document.getElementById('settingsSolo').checked=j.solo_mining;document.getElementById('settingsPool').checked=j.pool_mining}catch(e){}}
 async function loadSettings(){let r=await fetch('/api/settings');let s=await r.json();document.getElementById('poolHost').textContent=s.pool_stratum_host||'-';document.getElementById('poolPort').textContent=s.pool_stratum_port||'-';document.getElementById('poolPreset').textContent=s.pool_preset||'-'}
 async function saveSettings(){let s={solo_mining_enabled:document.getElementById('settingsSolo').checked,pool_mining_enabled:document.getElementById('settingsPool').checked};await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(s)});loadSettings();loadStatus();alert('Settings saved. Restart the app to apply mining mode changes.')}
 setInterval(loadStatus,3000);loadStatus();loadSettings();
