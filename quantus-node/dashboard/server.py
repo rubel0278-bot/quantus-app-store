@@ -219,15 +219,34 @@ button.secondary{background:#222;color:#eee;border:1px solid #333}
   </div>
 
   <div id="pool" class="panel">
-    <div class="card">
+    <div class="card" style="border-color:#2e8f5b;background:linear-gradient(180deg,#111,#0d0d0d);border-radius:24px;padding:22px;margin-bottom:18px">
       <h3>Pool mining</h3>
+      <div class="small" style="color:#aaa;margin-bottom:12px">Use this page to see whether your Quantus app is running solo mining or a real pool backend. The node does not provide a Stratum v1 server by itself.</div>
       <div class="row">
-        <div class="metric"><label>Stratum host</label><div class="val" id="poolHost">-</div></div>
-        <div class="metric"><label>Stratum port</label><div class="val" id="poolPort">-</div></div>
-        <div class="metric"><label>Preset</label><div class="val" id="poolPreset">-</div></div>
+        <div class="metric"><label>Mining mode</label><div class="val" id="poolMode">-</div></div>
+        <div class="metric"><label>Active backend</label><div class="val" id="poolBackend">-</div></div>
+        <div class="metric"><label>Status</label><div class="val" id="poolStatus">-</div></div>
+        <div class="metric"><label>Difficulty</label><div class="val" id="poolDifficulty">-</div></div>
       </div>
-      <div style="height:12px"></div>
-      <button onclick="saveSettings()">Save pool settings</button>
+      <div style="height:14px"></div>
+      <div class="card" style="background:#1b1b1b">
+        <h3>Connection / Setup</h3>
+        <div class="small">For true solo mining, use the official `quantus-miner` against this node over QUIC/TLS:</div>
+        <div class="small">Endpoint: <code>node:9833/udp</code> / inside this app: <code>quantus-node:9833/udp</code></div>
+        <div class="small">Auth: <code>miner-auth-token</code> from <code>/data/chains/&lt;chain&gt;/miner-auth-token</code></div>
+        <div class="small">TLS pin: <code>miner-tls-cert-sha256</code> from <code>/data/chains/&lt;chain&gt;/miner-tls-cert-sha256</code></div>
+        <div class="small">Example:</div>
+        <pre style="white-space:pre-wrap;background:#111;color:#e6edf3;padding:12px;border-radius:8px">quantus-miner --node "quantus-node:9833" --auth-token "$MINER_AUTH_TOKEN" --gpu-devices 0 --tls-pin "$MINER_TLS_CERT_SHA256"</pre>
+        <div style="height:12px"></div>
+        <h3>Stratum pool fields</h3>
+        <div class="row">
+          <div class="metric"><label>Stratum host</label><div class="val" id="poolHost">-</div></div>
+          <div class="metric"><label>Stratum port</label><div class="val" id="poolPort">-</div></div>
+          <div class="metric"><label>Preset</label><div class="val" id="poolPreset">-</div></div>
+        </div>
+        <div style="height:12px"></div>
+        <button onclick="saveSettings()">Save pool settings</button>
+      </div>
     </div>
   </div>
 
@@ -255,7 +274,7 @@ button.secondary{background:#222;color:#eee;border:1px solid #333}
 </div>
 <script>
 function showTab(id){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');event.currentTarget.classList.add('active')}
-async function loadStatus(){try{let r=await fetch('/api/status');let j=await r.json();document.getElementById('syncText').textContent=j.state;document.getElementById('syncCircle').textContent=j.sync_percentage===null?'-':(j.sync_percentage+'%');document.getElementById('syncBadge').textContent=j.badge;document.getElementById('blocks').textContent=j.block_height??'-';document.getElementById('headers').textContent=j.headers??'-';document.getElementById('peers').textContent=j.peers??'-';document.getElementById('chainLag').textContent=j.chain_lag??'-';document.getElementById('mempool').textContent=j.mempool??'-';document.getElementById('disk').textContent=j.disk??'-';document.getElementById('chainMeta').textContent=(j.chain||'main')+' | peers '+j.peers+' | finalized #'+(j.finalized_block??'-');document.getElementById('lastBlockLine').textContent=j.last_block?('Best '+j.last_block+' | Finalized #'+(j.finalized_block??'-')+' | Peers '+j.peers):'';document.getElementById('soloPort').textContent=j.solo_port??'9333';document.getElementById('soloWorkers').textContent=j.solo_workers??'-';document.getElementById('soloHashrate').textContent=j.solo_hashrate??'-';document.getElementById('readinessPills').innerHTML=(j.readiness_pills||[]).map(p=>'<span class="pill">'+p+'</span>').join('');document.getElementById('checklist').innerHTML=(j.checklist||[]).map(c=>'<div class="metric"><label>'+c.title+'</label><div class="val" style="color:'+(c.ready?'#00ff88':'#ffaa00')+'">'+(c.ready?'Ready':'Needs attention')+'</div><div class="small">'+c.detail+'</div></div>').join('');document.getElementById('miningMode').textContent=j.solo_mining?'Solo':(j.pool_mining?'Pool':'Off');document.getElementById('soloState').textContent=j.solo_mining?'Active':'Inactive';document.getElementById('poolState').textContent=j.pool_mining?'Active':'Inactive';document.getElementById('soloCard').style.display=j.solo_mining?'block':'none';document.getElementById('soloToggle').checked=j.solo_mining;document.getElementById('poolToggle').checked=j.pool_mining;document.getElementById('settingsSolo').checked=j.solo_mining;document.getElementById('settingsPool').checked=j.pool_mining}catch(e){}}
+async function loadStatus(){try{let r=await fetch('/api/status');let j=await r.json();document.getElementById('syncText').textContent=j.state;document.getElementById('syncCircle').textContent=j.sync_percentage===null?'-':(j.sync_percentage+'%');document.getElementById('syncBadge').textContent=j.badge;document.getElementById('blocks').textContent=j.block_height??'-';document.getElementById('headers').textContent=j.headers??'-';document.getElementById('peers').textContent=j.peers??'-';document.getElementById('chainLag').textContent=j.chain_lag??'-';document.getElementById('mempool').textContent=j.mempool??'-';document.getElementById('disk').textContent=j.disk??'-';document.getElementById('chainMeta').textContent=(j.chain||'main')+' | peers '+j.peers+' | finalized #'+(j.finalized_block??'-');document.getElementById('lastBlockLine').textContent=j.last_block?('Best '+j.last_block+' | Finalized #'+(j.finalized_block??'-')+' | Peers '+j.peers):'';document.getElementById('soloPort').textContent=j.solo_port??'9333';document.getElementById('soloWorkers').textContent=j.solo_workers??'-';document.getElementById('soloHashrate').textContent=j.solo_hashrate??'-';document.getElementById('readinessPills').innerHTML=(j.readiness_pills||[]).map(p=>'<span class="pill">'+p+'</span>').join('');document.getElementById('checklist').innerHTML=(j.checklist||[]).map(c=>'<div class="metric"><label>'+c.title+'</label><div class="val" style="color:'+(c.ready?'#00ff88':'#ffaa00')+'">'+(c.ready?'Ready':'Needs attention')+'</div><div class="small">'+c.detail+'</div></div>').join('');document.getElementById('miningMode').textContent=j.solo_mining?'Solo':(j.pool_mining?'Pool':'Off');document.getElementById('poolMode').textContent=j.solo_mining?'Solo':(j.pool_mining?'Pool':'Off');document.getElementById('poolStatus').textContent=j.solo_mining?'Built-in miner: quantus-miner QUIC/TLS on 9833/udp':(j.pool_mining?'Pool: configured separately':'Off');document.getElementById('poolBackend').textContent=j.solo_mining?'quantus-miner QUIC/TLS':'Pool backend';document.getElementById('poolDifficulty').textContent='Not reported';document.getElementById('soloState').textContent=j.solo_mining?'Active':'Inactive';document.getElementById('poolState').textContent=j.pool_mining?'Active':'Inactive';document.getElementById('soloCard').style.display=j.solo_mining?'block':'none';document.getElementById('soloToggle').checked=j.solo_mining;document.getElementById('poolToggle').checked=j.pool_mining;document.getElementById('settingsSolo').checked=j.solo_mining;document.getElementById('settingsPool').checked=j.pool_mining}catch(e){}}
 async function loadSettings(){let r=await fetch('/api/settings');let s=await r.json();document.getElementById('poolHost').textContent=s.pool_stratum_host||'-';document.getElementById('poolPort').textContent=s.pool_stratum_port||'-';document.getElementById('poolPreset').textContent=s.pool_preset||'-'}
 async function saveSettings(){let s={solo_mining_enabled:document.getElementById('settingsSolo').checked,pool_mining_enabled:document.getElementById('settingsPool').checked};await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(s)});loadSettings();loadStatus();alert('Settings saved. Restart the app to apply mining mode changes.')}
 setInterval(loadStatus,3000);loadStatus();loadSettings();
