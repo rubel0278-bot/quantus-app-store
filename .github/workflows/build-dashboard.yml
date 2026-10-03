@@ -26,7 +26,8 @@ jobs:
         with:
           context: ./quantus-node/dashboard
           platforms: linux/amd64
-          push: true
+          push: false
+          load: true
           tags: |
             ${{ env.DASHBOARD_IMAGE }}:latest
             ${{ env.DASHBOARD_IMAGE }}:v1.0.1
